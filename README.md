@@ -4,77 +4,115 @@ Cliente Final: Music Stream
 
 Objetivo: Integrar datos de Spotify y Last.fm para la creación de una base de datos relacional en MySQL y la ejecución de consultas analíticas para un estudio de mercado.
 
-📝 Descripción del Proyecto
+📝 De qué va este proyecto
 
-Este proyecto consiste en el desarrollo de una solución de datos para la empresa Music Stream. Se ha diseñado un flujo de trabajo para unificar información musical de dos fuentes distintas, permitiendo realizar un análisis estratégico del mercado actual.
+En este proyecto hemos unido información musical de dos fuentes diferentes para crear nuestra propia base de datos desde cero. El cliente (Music Stream) solicitó un estudio de mercado enfocado en las tendencias actuales, por lo que filtramos los datos bajo los siguientes criterios:
 
-Para cumplir con los requerimientos del cliente, los datos han sido filtrados bajo los siguientes criterios:
-
-Ventana temporal: Lanzamientos de los últimos 5 años.
+Ventana temporal: Lanzamientos de los últimos 5 años (2021-2025).
 
 Géneros objetivo: Reggaeton, Hip-Hop, Rock, Indie y Pop.
 
-El proceso incluye la lectura de datos en crudo (JSON), el enriquecimiento de la información mediante una API externa, la limpieza y normalización con Python (Pandas) y el almacenamiento final en un sistema de gestión de bases de datos relacionales (MySQL).
+Para lograrlo, procesamos datos en formato JSON de Spotify, enriquecimos la información mediante la API de Last.fm, realizamos la limpieza con Pandas y automatizamos la carga en MySQL mediante Python.
 
 📂 Estructura del Repositorio
 
-El proyecto se compone de tres notebooks principales y archivos de soporte para la gestión de datos y configuración.
+El proyecto se compone de tres notebooks principales que deben ejecutarse secuencialmente:
 
 Archivos de Configuración
 
-.env: Archivo local destinado a almacenar de forma segura la clave de acceso (API_KEY) de Last.fm. Este archivo no se incluye en el repositorio por motivos de seguridad.
+.env: Archivo local para almacenar la API Key de Last.fm de forma segura. (No incluido en el repositorio).
 
-.gitignore: Configuración para excluir archivos sensibles (como el .env) y archivos temporales del sistema del control de versiones.
+.gitignore: Archivo de configuración vital para la seguridad. Evita que se suba accidentalmente el archivo .env (que contiene la clave secreta) al repositorio público.
 
 Archivos de Datos (.json)
 
-datos_spotify.json: Dataset original con información base (ID, artista, canción, género y año). Ejemplo de estructura:
+datos_spotify.json: Dataset original con ID, nombre del artista, canción, género y año.
 
-[
-  {
-    "id": "7AlYBA5M9FVXDqN31cbExE", 
-    "artist_name": "Remedios Amaya", 
-    "track_name": "El zarandeo", 
-    "genre": "flamenco", 
-    "year": 2000
-  }
-]
+info_artistas.json: Dataset enriquecido con los datos de Last.fm (oyentes, reproducciones y artistas similares).
 
+lista_artistas.json: Archivo intermedio con una lista única de 3.827 artistas. Se utiliza para cruzar los datos de Spotify con la API de Last.fm y obtener métricas de popularidad.
 
-info_artistas.json: Dataset generado con los datos extraídos de la API de Last.fm. Incluye métricas de popularidad y relaciones de similitud. Ejemplo de estructura:
+Código y Pipeline (.ipynb)
 
-[
-  {
-    "name": "Pröz",
-    "listeners": "10465",
-    "playcount": "193643",
-    "similares": ["444pluto", "Yati", "pink luu"]
-  }
-]
+obtencion_lista_artistas_spotify.ipynb: Filtrado por género/año y limpieza de duplicados de la fuente Spotify.
 
+obtencion_info_artistas_api.ipynb: Conexión con la API de Last.fm y generación del dataset final enriquecido.
 
-lista_artistas.json: Lista única de artistas generada tras la limpieza de Spotify (3.827 registros). Se utiliza para realizar las peticiones dirigidas a la API de Last.fm y cruzar los datos de oyentes y reproducciones.
-
-Código y Ejecución (.ipynb)
-
-obtencion_lista_artistas_spotify.ipynb: Realiza la carga inicial, filtrado por género/año y generación de la lista única de artistas.
-
-obtencion_info_artistas_api.ipynb: Gestiona las peticiones a la API de Last.fm, procesa las respuestas (incluyendo listas de diccionarios anidadas) y consolida la información.
-
-creacion_insercion_consultas.ipynb: Notebook final que realiza la conexión a MySQL, crea el esquema relacional, inserta los datos y ejecuta 12 consultas SQL de negocio.
+creacion_insercion_consultas.ipynb: Creación del modelo relacional en MySQL, inserción de datos y ejecución del bloque analítico.
 
 🗄️ Modelo de Base de Datos
 
-La base de datos se ha normalizado en 6 tablas relacionales:
+El diseño se basa en un esquema relacional normalizado compuesto por 6 tablas:
 
-artistas: Datos maestros del artista (nombre, oyentes y reproducciones).
+artistas: Información maestra (nombre, oyentes y reproducciones).
 
-generos_musicales: Catálogo de géneros musicales definidos en el estudio.
+generos_musicales: Catálogo de géneros del estudio.
 
-similares: artistas similares
+similares: Catálogo de artistas relacionados.
 
-canciones: Tabla intermedia para la relación N:M entre canciones y géneros.
+canciones: Registro de pistas vinculadas a géneros y años.
 
-artistas_similares: Mapeo de la red de similitud entre artistas según Last.fm.
+artistas_similares: Relación entre artistas y sus recomendaciones.
 
-cancion_artista: 
+canciones_artistas: Vínculo entre artistas y sus obras.
+
+📊 Valor de Negocio: El Estudio de Mercado
+
+A través de 9 consultas iniciales SQL, el proyecto responde a preguntas estratégicas para Music Stream, destacando los siguientes hallazgos:
+
+Rendimiento por Artista: Identificación de los artistas con mayor número de canciones por año, así como aquellos con máximos niveles de oyentes y reproducciones totales.
+
+Diversidad y Alcance: Análisis de qué artistas abarcan mayor número de géneros y cuáles son los artistas similares que más se repiten en las recomendaciones de la API.
+
+Dinámica del Mercado: Determinación del año con mayor volumen de lanzamientos y la distribución de artistas por cada género musical.
+
+Análisis de Actividad y Colaboración: Detección de artistas con mayor número de colaboraciones y estudio de la constancia de lanzamientos (identificando periodos de inactividad).
+
+🛠️ Tecnologías Aplicadas
+
+Python 3: Lógica de integración y automatización.
+
+Pandas: Limpieza y transformación de estructuras de datos.
+
+Requests: Consumo de la API REST de Last.fm.
+
+MySQL & mysql-connector-python: Gestión de base de datos relacional.
+
+🚀 Cómo ejecutarlo en tu ordenador
+
+1. Instala las librerías
+
+pip install pandas requests mysql-connector-python python-dotenv
+
+
+2. Configura la API de Last.fm
+
+Obtén tu clave en Last.fm API.
+
+Crea un archivo .env en la carpeta raíz.
+
+Añade tu clave: API_KEY=tu_clave_aquí.
+
+3. Orden de ejecución
+
+obtencion_lista_artistas_spotify.ipynb
+
+obtencion_info_artistas_api.ipynb
+
+creacion_insercion_consultas.ipynb (Configura tu usuario/password de MySQL en el script).
+
+🔮 Mejoras y Próximos Pasos
+
+Consolidación y Autonomía de Datos: El siguiente paso técnico es generar un archivo maestro en formato .json que unifique los datos ya procesados. Esto permitirá eliminar la dependencia de APIs externas en futuras ejecuciones, optimizar la velocidad de carga en MySQL y asegurar que la información esté totalmente validada antes de la inserción definitiva.
+
+👥 Equipo de Desarrollo
+
+Natalia Pozo - Scrum Master
+
+Katya Huachaca - Data Engineer
+
+Iciar Castellano - Data Engineer
+
+Pilar Quevedo - Business Intelligence Analyst
+
+Saray H. Fleitas - Business Intelligence Analyst
